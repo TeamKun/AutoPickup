@@ -1,6 +1,7 @@
 package net.kunmc.lab.autopickup;
 
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -17,6 +18,8 @@ import java.util.UUID;
 public final class AutoPickup extends JavaPlugin implements Listener {
     private static class PlayerData {
         public Block lastLookingBlock;
+        public boolean jumping;
+        public boolean sneaking;
     }
 
     private Map<UUID, PlayerData> playerDataMap = new HashMap<>();
@@ -38,11 +41,35 @@ public final class AutoPickup extends JavaPlugin implements Listener {
         if (player.hasPermission("autopickup")) {
             UUID uuid = player.getUniqueId();
             PlayerData data = playerDataMap.computeIfAbsent(uuid, id -> new PlayerData());
-            Block lookingBlock = player.getTargetBlock(4);
-            if (lookingBlock != null && !Objects.equals(data.lastLookingBlock, lookingBlock)) {
-                data.lastLookingBlock = lookingBlock;
-                PlayerInventory inventory = player.getInventory();
-                inventory.addItem(new ItemStack(lookingBlock.getType()));
+            if (player.hasPermission("autopickup.look")) {
+                Block lookingBlock = player.getTargetBlock(4);
+                if (lookingBlock != null && !Objects.equals(data.lastLookingBlock, lookingBlock)) {
+                    data.lastLookingBlock = lookingBlock;
+                    PlayerInventory inventory = player.getInventory();
+                    inventory.addItem(new ItemStack(lookingBlock.getType()));
+                }
+            }
+            if (player.hasPermission("autopickup.jump")) {
+                boolean jumping = event.getFrom().getY() < event.getTo().getY() && !player.isSwimming() && !player.isFlying();
+                if (data.jumping != jumping) {
+                    data.jumping = jumping;
+                    if (jumping) {
+                        Block standingBlock = event.getTo().getBlock().getRelative(BlockFace.DOWN);
+                        PlayerInventory inventory = player.getInventory();
+                        inventory.addItem(new ItemStack(standingBlock.getType()));
+                    }
+                }
+            }
+            if (player.hasPermission("autopickup.sneak")) {
+                boolean sneaking = player.isSneaking();
+                if (data.sneaking != sneaking) {
+                    data.sneaking = sneaking;
+                    if (sneaking) {
+                        Block standingBlock = event.getTo().getBlock().getRelative(BlockFace.DOWN);
+                        PlayerInventory inventory = player.getInventory();
+                        inventory.addItem(new ItemStack(standingBlock.getType()));
+                    }
+                }
             }
         }
     }

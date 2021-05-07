@@ -7,4 +7,15 @@ authors: [Kamesuta]
 permissions:
   autopickup:
     default: true
+    description: ブロックが取れる
+    children:
+      - autopickup.look
+  autopickup.look:
+    default: true
     description: 見たらブロックが取れる
+  autopickup.jump:
+    default: false
+    description: ジャンプしたらブロックが取れる
+  autopickup.sneak:
+    default: false
+    description: スニークしたらブロックが取れる
