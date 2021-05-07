@@ -6,6 +6,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.event.player.PlayerToggleSneakEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -36,6 +37,26 @@ public final class AutoPickup extends JavaPlugin implements Listener {
     }
 
     @EventHandler
+    public void onSneak(PlayerToggleSneakEvent event) {
+        Player player = event.getPlayer();
+        if (player.hasPermission("autopickup")) {
+            UUID uuid = player.getUniqueId();
+            PlayerData data = playerDataMap.computeIfAbsent(uuid, id -> new PlayerData());
+            if (player.hasPermission("autopickup.sneak")) {
+                boolean sneaking = event.isSneaking();
+                if (data.sneaking != sneaking) {
+                    data.sneaking = sneaking;
+                    if (sneaking) {
+                        Block standingBlock = player.getLocation().getBlock().getRelative(BlockFace.DOWN);
+                        PlayerInventory inventory = player.getInventory();
+                        inventory.addItem(new ItemStack(standingBlock.getType()));
+                    }
+                }
+            }
+        }
+    }
+
+    @EventHandler
     public void onMove(PlayerMoveEvent event) {
         Player player = event.getPlayer();
         if (player.hasPermission("autopickup")) {
@@ -54,17 +75,6 @@ public final class AutoPickup extends JavaPlugin implements Listener {
                 if (data.jumping != jumping) {
                     data.jumping = jumping;
                     if (jumping) {
-                        Block standingBlock = event.getTo().getBlock().getRelative(BlockFace.DOWN);
-                        PlayerInventory inventory = player.getInventory();
-                        inventory.addItem(new ItemStack(standingBlock.getType()));
-                    }
-                }
-            }
-            if (player.hasPermission("autopickup.sneak")) {
-                boolean sneaking = player.isSneaking();
-                if (data.sneaking != sneaking) {
-                    data.sneaking = sneaking;
-                    if (sneaking) {
                         Block standingBlock = event.getTo().getBlock().getRelative(BlockFace.DOWN);
                         PlayerInventory inventory = player.getInventory();
                         inventory.addItem(new ItemStack(standingBlock.getType()));
