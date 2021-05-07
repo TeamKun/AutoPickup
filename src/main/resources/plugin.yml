@@ -3,3 +3,8 @@ version: ${project.version}
 main: net.kunmc.lab.autopickup.AutoPickup
 api-version: 1.16
 authors: [Kamesuta]
+
+permissions:
+  autopickup:
+    default: true
+    description: 見たらブロックが取れる

@@ -5,6 +5,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -34,13 +35,15 @@ public final class AutoPickup extends JavaPlugin implements Listener {
     @EventHandler
     public void onMove(PlayerMoveEvent event) {
         Player player = event.getPlayer();
-        UUID uuid = player.getUniqueId();
-        PlayerData data = playerDataMap.computeIfAbsent(uuid, id -> new PlayerData());
-        Block lookingBlock = player.getTargetBlock(4);
-        if (lookingBlock != null && !Objects.equals(data.lastLookingBlock, lookingBlock)) {
-            data.lastLookingBlock = lookingBlock;
-            PlayerInventory inventory = player.getInventory();
-            lookingBlock.getDrops().forEach(inventory::addItem);
+        if (player.hasPermission("autopickup")) {
+            UUID uuid = player.getUniqueId();
+            PlayerData data = playerDataMap.computeIfAbsent(uuid, id -> new PlayerData());
+            Block lookingBlock = player.getTargetBlock(4);
+            if (lookingBlock != null && !Objects.equals(data.lastLookingBlock, lookingBlock)) {
+                data.lastLookingBlock = lookingBlock;
+                PlayerInventory inventory = player.getInventory();
+                inventory.addItem(new ItemStack(lookingBlock.getType()));
+            }
         }
     }
 }
